@@ -17,13 +17,13 @@ install:
 
 test:
 	# Additional, optional, tests could go here
-	#python -m pytest -vv --cov=myrepolib tests/*.py
-	#python -m pytest --nbval notebook.ipynb
+	#python -m pytest -vv 
+	#python -m pytest --nbval
 
 lint:
 	# This is linter for Dockerfiles
 	./hadolint Dockerfile
 	# This should be run from inside a virtualenv
-	pylint --disable=R,C,W1203,W1202 app.py
+	pylint --disable=R,C,W1203,W1202 coreapp.py
 
 all: install lint test
