@@ -1,34 +1,136 @@
 # CircleCI configuration file
 version: 2.1
 
-
-
-
-
 jobs:
-  # Job one with a unique name
-  say_hello:
+  build:
     docker:
-     - image: cimg/base:2022.05
+      - image: python:3.7.3-stretch
+    working_directory: ~/repo
     steps:
-      - run: echo "Say hello to YAML!"
-  # Job two with a unique name
-  say_goodbye:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            make install
+            # Install hadolint
+            wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64
+            chmod +x /bin/hadolint
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+      # linting here
+      - run:
+          name: run lint
+          command: |
+            . venv/bin/activate
+            make lint 
+
+  docker-upload:
     docker:
-     - image: cimg/base:2022.05
+      # Use the Image that have Docker installed
+      - image: circleci/golang:1.15
+    working_directory: ~/repo
     steps:
-      - run: echo "Say goodbye to YAML!"
+      - checkout
+      - run:
+          name: Testoutput
+          command: |
+            echo "here with code"
 
+  deployment-infra:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Testoutput
+          command: |
+            echo "here with code"
 
+  configure-infra:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: 
+            - "SHA256:PfbmgPLXtSW1UUnUIH23iiWGIOwSa3/+H+bNYOu4l6"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Testoutput
+          command: |
+            echo "here with code"
+          environment:
+            ANSIBLE_HOST_KEY_CHECKING: False
 
+  cluster-configure:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: 
+            - "SHA256:PfbmgPLXtSW1UUnUIH23iiWGIOwSa3/+H+bNYOu4l6"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Testoutput
+          command: |
+            echo "here with code"
 
-
+  docker-deployment:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: 
+            - "SHA256:PfbmgPLXtSW1UUnUIH23iiWGIOwSa3/+H+bNYOu4l6"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Testoutput
+          command: |
+            echo "here with code"
+          environment:
+            ANSIBLE_HOST_KEY_CHECKING: False
+          no_output_timeout: 2m
 
 
 workflows:
   # Name of workflow
-  hello_and_goodbye:
+  Capstone:
     # List of jobs that will run
     jobs:
-      - say_hello
-      - say_goodbye
+      - build
+      - docker-upload:
+          requires:
+            - build
+          filters:
+            branches:
+              only: [ main ]
+      - deployment-infra:
+          filters:
+            branches:
+              only: [ main ]
+      - configure-infra:
+          requires:
+            - deployment-infra
+      - cluster-configure:
+          requires:
+            - docker-upload
+            - configure-infra
+      - docker-deployment:
+          requires:
+            - cluster-configure
