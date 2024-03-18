@@ -1,2 +1,5 @@
 pylint
 Flask
+numpy
+pandas
+Click
