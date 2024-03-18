@@ -2,7 +2,7 @@
 # Create and activate a virtual environment
 # Install dependencies in requirements.txt
 # Dockerfile to pass hadolint
-# app.py to pass pylint
+# coreapp.py to pass pylint
 
 setup:
 	# Create python virtualenv
@@ -16,14 +16,14 @@ install:
 	chmod +x ./hadolint
 
 test:
-	# Additional, optional, tests could go here
-	#python -m pytest -vv 
-	#python -m pytest --nbval
+#	# Additional, optional, tests could go here
+#	# python -m pytest -vv 
+#	# python -m pytest --nbval
 
 lint:
 	# This is linter for Dockerfiles
 	./hadolint Dockerfile
 	# This should be run from inside a virtualenv
-	pylint --disable=R,C,W1203,W1202 coremmapp.py
+	pylint --disable=R,C,W1203,W1202 coreapp.py
 
 all: install lint test
