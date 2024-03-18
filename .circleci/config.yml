@@ -113,17 +113,20 @@ workflows:
   Capstone:
     # List of jobs that will run
     jobs:
-      - build
+      - build:
+          filters:
+            branches:
+              only: [ master ]
       - docker-upload:
           requires:
             - build
           filters:
             branches:
-              only: [ main ]
+              only: [ master ]
       - deployment-infra:
           filters:
             branches:
-              only: [ main ]
+              only: [ master ]
       - configure-infra:
           requires:
             - deployment-infra
