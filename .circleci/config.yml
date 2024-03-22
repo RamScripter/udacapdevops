@@ -104,7 +104,7 @@ jobs:
           name: Management
           command: |
             aws cloudformation deploy \
-              --template-file cloudfn/manage_infrastructure.yml \
+              --template-file cloudfn/manage_infra.yml \
               --tags project=${ENVIRONMENT_NAME}-project \
               --stack-name "${ENVIRONMENT_NAME}-manage" \
               --region ${AWS_DEFAULT_REGION} \
