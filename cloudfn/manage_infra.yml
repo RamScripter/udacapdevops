@@ -1,1 +1,57 @@
 #This is to initiat Management Node
+Description: 
+  AWS EKS CapstoneCluster Management Security Group infrastructure Project Capstone OL
+
+Parameters:
+  EnvironmentName:
+    Description: Environment resource names
+    Type: String
+  SSHKey:
+    Description: SSH key
+    Type: String
+  AMI:
+    Description: AMI OS Images
+    Type: String
+
+Resources:
+  SecurityGroupInstance:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${EnvironmentName}-SecurityGroupManagement
+      GroupDescription: Direction allow ports
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3030
+          ToPort: 3030
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9090
+          ToPort: 9090
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9093
+          ToPort: 9093
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9100
+          ToPort: 9100
+          CidrIp: 0.0.0.0/0
+
+  ManagementServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      # InstanceType: t3.medium
+      SecurityGroups: 
+        - Ref: SecurityGroupInstance
+      KeyName: !Ref SSHKey
+      ImageId: !Ref AMI
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-ManagementServer
+        - Key: Project
+          Value: !Ref EnvironmentName
