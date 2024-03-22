@@ -42,10 +42,23 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
-          name: Testoutput
+          name: Building Docker
           command: |
-            echo "here with code"
+            # Build with tag
+            docker build --tag=$DOCKER_IMAGE_NAME .
+            # List image
+            docker image ls
+      # Upload to Dockerhub Ollen82
+      - run:
+          name: Dockerhub upload
+          command: |
+            echo "Docker ID and Image: $DOCKER_IMAGE_NAME"
+            docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
+            docker tag $DOCKER_IMAGE_NAME $DOCKERHUB_USERNAME/$DOCKER_IMAGE_NAME:$CIRCLE_WORKFLOW_ID
+            docker push $DOCKERHUB_USERNAME/$DOCKER_IMAGE_NAME:$CIRCLE_WORKFLOW_ID
 
   deployment-infra:
     docker:
@@ -53,9 +66,64 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Testoutput
+          name: Install lib
+          command: yum install -y tar gzip
+      - run:
+          name: EKS network
           command: |
-            echo "here with code"
+            aws cloudformation deploy \
+              --template-file cloudfn/network_infra.yml \
+              --tags project=${ENVIRONMENT_NAME}-project \
+              --stack-name "${ENVIRONMENT_NAME}-network" \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides file://cloudfn/network_param.json
+      - run:
+          name: EKS cluster
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudfn/cluster_infra.yml \
+              --tags project=${ENVIRONMENT_NAME}-project \
+              --stack-name "${ENVIRONMENT_NAME}-cluster" \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides file://cloudfn/cluster_param.json \
+              --capabilities CAPABILITY_NAMED_IAM
+          no_output_timeout: 15m
+      - run:
+          name: Nodea
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudfn/eks_nodea_infra.yml \
+              --tags project=${ENVIRONMENT_NAME}-project \
+              --stack-name "${ENVIRONMENT_NAME}-nodea" \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides file://cloudfn/eks_nodea_param.json \
+              --capabilities CAPABILITY_NAMED_IAM
+      - run:
+          name: Management
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudfn/manage_infrastructure.yml \
+              --tags project=${ENVIRONMENT_NAME}-project \
+              --stack-name "${ENVIRONMENT_NAME}-manage" \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides file://cloudfn/manage_param.json \
+              --output text >> ~/deployment.txt
+            cat ~/deployment.txt
+      - run:
+          name: Extract management public Ip Address
+          command: |
+            echo [management] > ~/inventory.txt
+            aws ec2 describe-instances \
+              --region "${AWS_DEFAULT_REGION}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=${ENVIRONMENT_NAME}-direction*" \
+              --output text >> ~/inventory.txt
+            cat ~/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - inventory.txt
+            - deployment.txt
 
   configure-infra:
     docker:
@@ -64,13 +132,25 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: 
-            - "SHA256:PfbmgPLXtSW1UUnUIH23iiWGIOwSa3/+H+bNYOu4l6"
+            - "SHA256:lBYbLMorvROQxPG3K0ysX9eMgOrb96j52ZUBbzBUO2k"
       - attach_workspace:
           at: ~/
       - run:
-          name: Testoutput
+          name: Install lib
           command: |
-            echo "here with code"
+            apk add --update ansible
+      - run:
+          name: Server configuration
+          command: |
+            if grep -q "No changes to deploy" ~/deployment.txt
+              then
+                cat ~/inventory.txt
+                echo "Managed instances configured"
+              else
+                cat ~/inventory.txt
+                cd ansible
+                ansible-playbook -i ~/inventory.txt server_cloudfn.yml
+              fi
           environment:
             ANSIBLE_HOST_KEY_CHECKING: False
 
@@ -81,13 +161,52 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: 
-            - "SHA256:PfbmgPLXtSW1UUnUIH23iiWGIOwSa3/+H+bNYOu4l6"
+            - "SHA256:lBYbLMorvROQxPG3K0ysX9eMgOrb96j52ZUBbzBUO2k"
       - attach_workspace:
           at: ~/
       - run:
-          name: Testoutput
+          name: Install lib
           command: |
-            echo "here with code"
+            apk add --update ansible
+      - run:
+          name: Server configuration
+          command: |
+            if grep -q "No changes to deploy" ~/deployment.txt
+              then
+                cat ~/inventory.txt
+                echo "Direction instances configured"
+              else
+                cat ~/inventory.txt
+                cd ansible
+                ansible-playbook -i ~/inventory.txt cluster_cloudfn.yml
+              fi
+          environment:
+            ANSIBLE_HOST_KEY_CHECKING: False
+      - run:
+          name: LB domain
+          command: |
+            if grep -q "No changes to deploy" ~/deployment.txt
+              then
+                cat ~/inventory.txt
+                echo "Direction instances configured."
+              else
+                cat ~/inventory.txt
+                echo "Wait 60 seconds..."
+                sleep 60
+              fi
+          environment:
+            ANSIBLE_HOST_KEY_CHECKING: False
+      - run:
+          name: LB DNS
+          command: |
+            cat ~/inventory.txt
+            cd ansible
+            ansible-playbook -i ~/inventory.txt dns_lb_store.yml
+            cat ~/elb_dns.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - elb_dns.txt
 
   docker-deployment:
     docker:
@@ -96,13 +215,19 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: 
-            - "SHA256:PfbmgPLXtSW1UUnUIH23iiWGIOwSa3/+H+bNYOu4l6"
+            - "SHA256:lBYbLMorvROQxPG3K0ysX9eMgOrb96j52ZUBbzBUO2k"
       - attach_workspace:
           at: ~/
       - run:
-          name: Testoutput
+          name: Install lib
           command: |
-            echo "here with code"
+            apk add --update ansible
+      - run:
+          name: Docker image deploy
+          command: |
+            cat ~/inventory.txt
+            cd ansible
+            ansible-playbook -i ~/inventory.txt app_dep.yml
           environment:
             ANSIBLE_HOST_KEY_CHECKING: False
           no_output_timeout: 2m

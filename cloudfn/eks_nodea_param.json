@@ -1,10 +1,22 @@
 [
 	{
-		"ParameterKey": "",
-		"ParameterValue": ""
+		"ParameterKey": "EnvironmentName",
+		"ParameterValue": "capstone"
 	},
 	{
-		"ParameterKey": "",
-		"ParameterValue": ""
+		"ParameterKey": "MinSize",
+		"ParameterValue": "2"
+    },
+	{
+		"ParameterKey": "MaxSize",
+		"ParameterValue": "2"
+    },
+	{
+		"ParameterKey": "DesiredSize",
+		"ParameterValue": "2"
+    },
+	{
+		"ParameterKey": "KeyPair",
+		"ParameterValue": "capstone"
     }
 ]

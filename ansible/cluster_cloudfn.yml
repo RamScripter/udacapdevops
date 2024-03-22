@@ -1,0 +1,11 @@
+- name: "EKS configuration"
+  hosts: management[0]
+  user: ubuntu
+  gather_facts: false
+  become: yes
+  vars:
+    ANSIBLE_HOST_KEY_CHECKING: False
+    ENVIRONMENT_NAME: "{{ lookup('env', 'ENVIRONMENT_NAME') }}"
+  roles:
+    - deployment
+    - service

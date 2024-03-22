@@ -1,10 +1,14 @@
 [
 	{
-		"ParameterKey": "",
-		"ParameterValue": ""
+		"ParameterKey": "EnvironmentName",
+		"ParameterValue": "capstone"
 	},
 	{
-		"ParameterKey": "",
-		"ParameterValue": ""
+		"ParameterKey": "SSHKey",
+		"ParameterValue": "capstone"
+    },
+	{
+		"ParameterKey": "AMI",
+		"ParameterValue": "ami-02d7fd1c2af6eead0"
     }
 ]

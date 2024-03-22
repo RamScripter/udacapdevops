@@ -1,0 +1,25 @@
+- name: "Store LB DNS to local"
+  hosts: management[0]
+  user: ubuntu
+  gather_facts: false
+  become: yes
+  vars:
+    ANSIBLE_HOST_KEY_CHECKING: False
+    ENVIRONMENT_NAME: "{{ lookup('env', 'ENVIRONMENT_NAME') }}"
+  roles:
+    - kubernetes
+  tasks:
+    - name: LB DNS
+      # shell: "./bin/kubectl get services"
+      # shell: "./bin/kubectl get svc --all-namespaces"
+      shell: "./bin/kubectl get svc {{ ENVIRONMENT_NAME }}-service"
+      register: elb_dns
+      changed_when: false
+      args:
+        chdir: $HOME
+
+    - name: Print to local file
+      copy:
+        content: "{{ elb_dns.stdout }}"
+        dest: "~/elb_dns.txt"
+      delegate_to: localhost

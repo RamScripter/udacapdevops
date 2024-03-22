@@ -1,10 +1,6 @@
 [
 	{
-		"ParameterKey": "",
-		"ParameterValue": ""
-	},
-	{
-		"ParameterKey": "",
-		"ParameterValue": ""
-    }
+		"ParameterKey": "EnvironmentName",
+		"ParameterValue": "capstone"
+	}
 ]
