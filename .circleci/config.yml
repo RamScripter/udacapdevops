@@ -106,19 +106,19 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudfn/manage_infra.yml \
               --tags project=${ENVIRONMENT_NAME}-project \
-              --stack-name "${ENVIRONMENT_NAME}-manage" \
+              --stack-name "${ENVIRONMENT_NAME}-Management" \
               --region ${AWS_DEFAULT_REGION} \
               --parameter-overrides file://cloudfn/manage_param.json \
               --output text >> ~/deployment.txt
             cat ~/deployment.txt
       - run:
-          name: Extract management public Ip Address
+          name: Extract Management public Ip Address
           command: |
             echo [management] > ~/inventory.txt
             aws ec2 describe-instances \
               --region "${AWS_DEFAULT_REGION}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Name,Values=${ENVIRONMENT_NAME}-direction*" \
+              --filters "Name=tag:Name,Values=${ENVIRONMENT_NAME}-Management*" \
               --output text >> ~/inventory.txt
             cat ~/inventory.txt
       - persist_to_workspace:
@@ -176,7 +176,7 @@ jobs:
             if grep -q "No changes to deploy" ~/deployment.txt
               then
                 cat ~/inventory.txt
-                echo "Direction instances configured"
+                echo "Management instances configured"
               else
                 cat ~/inventory.txt
                 cd ansible
@@ -190,7 +190,7 @@ jobs:
             if grep -q "No changes to deploy" ~/deployment.txt
               then
                 cat ~/inventory.txt
-                echo "Direction instances configured."
+                echo "Management instances configured."
               else
                 cat ~/inventory.txt
                 echo "Wait 60 seconds..."
