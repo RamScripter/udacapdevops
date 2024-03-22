@@ -4,7 +4,7 @@ Description:
 
 Parameters:
   EnvironmentName:
-    Description: Environment resource names
+    Description: Environment resource name
     Type: String
 
   VpcCIDR:

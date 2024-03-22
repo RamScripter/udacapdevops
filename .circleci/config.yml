@@ -73,8 +73,8 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file cloudfn/network_infra.yml \
-              --tags project=${ENVIRONMENT_NAME}-project \
-              --stack-name "${ENVIRONMENT_NAME}-network" \
+              --tags project=${EnvironmentName}-project \
+              --stack-name "${EnvironmentName}-network" \
               --region ${AWS_DEFAULT_REGION} \
               --parameter-overrides file://cloudfn/network_param.json
       - run:
@@ -82,8 +82,8 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file cloudfn/cluster_infra.yml \
-              --tags project=${ENVIRONMENT_NAME}-project \
-              --stack-name "${ENVIRONMENT_NAME}-cluster" \
+              --tags project=${EnvironmentName}-project \
+              --stack-name "${EnvironmentName}-cluster" \
               --region ${AWS_DEFAULT_REGION} \
               --parameter-overrides file://cloudfn/cluster_param.json \
               --capabilities CAPABILITY_NAMED_IAM
@@ -93,8 +93,8 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file cloudfn/eks_nodea_infra.yml \
-              --tags project=${ENVIRONMENT_NAME}-project \
-              --stack-name "${ENVIRONMENT_NAME}-nodea" \
+              --tags project=${EnvironmentName}-project \
+              --stack-name "${EnvironmentName}-nodea" \
               --region ${AWS_DEFAULT_REGION} \
               --parameter-overrides file://cloudfn/eks_nodea_param.json \
               --capabilities CAPABILITY_NAMED_IAM
@@ -103,8 +103,8 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file cloudfn/manage_infrastructure.yml \
-              --tags project=${ENVIRONMENT_NAME}-project \
-              --stack-name "${ENVIRONMENT_NAME}-manage" \
+              --tags project=${EnvironmentName}-project \
+              --stack-name "${EnvironmentName}-manage" \
               --region ${AWS_DEFAULT_REGION} \
               --parameter-overrides file://cloudfn/manage_param.json \
               --output text >> ~/deployment.txt
@@ -116,7 +116,7 @@ jobs:
             aws ec2 describe-instances \
               --region "${AWS_DEFAULT_REGION}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Name,Values=${ENVIRONMENT_NAME}-direction*" \
+              --filters "Name=tag:Name,Values=${EnvironmentName}-direction*" \
               --output text >> ~/inventory.txt
             cat ~/inventory.txt
       - persist_to_workspace:
@@ -249,6 +249,8 @@ workflows:
             branches:
               only: [ master ]
       - deployment-infra:
+          requires:
+            - build      
           filters:
             branches:
               only: [ master ]
