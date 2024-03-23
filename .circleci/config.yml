@@ -203,6 +203,7 @@ jobs:
           command: |
             cat ~/inventory.txt
             cd ansible
+                sleep 60            
             ansible-playbook -i ~/inventory.txt dns_lb_store.yml
             cat ~/elb_dns.txt
       - persist_to_workspace:
