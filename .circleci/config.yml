@@ -170,6 +170,7 @@ jobs:
           command: |
             apk add --update ansible
             apk add --update ansible openssh
+            apk add kubectl
       - run:
           name: Server configuration
           command: |
