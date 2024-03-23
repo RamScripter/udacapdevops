@@ -265,10 +265,10 @@ workflows:
             - configure-infra
           filters:
             branches:
-              only: [ sequenze ]
+              only: [ master ]
       - docker-deployment:
           requires:
             - cluster-configure
           filters:
             branches:
-              only: [ sequenze ]
+              only: [ master ]
