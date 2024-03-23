@@ -118,7 +118,7 @@ jobs:
             aws ec2 describe-instances \
               --region "${AWS_DEFAULT_REGION}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Name,Values=${ENVIRONMENT_NAME}-Management*" \
+              --filters "Name=tag:Name,Values=${ENVIRONMENT_NAME}-Management" \
               --output text >> ~/inventory.txt
             cat ~/inventory.txt
       - persist_to_workspace:
@@ -261,8 +261,9 @@ workflows:
             - deployment-infra
       - cluster-configure:
           requires:
-            - docker-upload
-            - configure-infra
+            - docker-deployment
+#            - docker-upload
+#            - configure-infra
       - docker-deployment:
           requires:
             - cluster-configure
