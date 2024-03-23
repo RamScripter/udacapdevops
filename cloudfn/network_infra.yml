@@ -138,7 +138,7 @@ Resources:
   CPSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Node works
+      GroupDescription: Node workers
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
