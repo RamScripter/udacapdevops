@@ -118,7 +118,7 @@ jobs:
             aws ec2 describe-instances \
               --region "${AWS_DEFAULT_REGION}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Name,Values=${ENVIRONMENT_NAME}-Management" \
+              --filters "Name=tag:Name,Values=${ENVIRONMENT_NAME}-Management*" \
               --output text >> ~/inventory.txt
             cat ~/inventory.txt
       - persist_to_workspace:
@@ -153,8 +153,6 @@ jobs:
                 cd ansible
                 ansible-playbook -i ~/inventory.txt server_cloudfn.yml
               fi
-          environment:
-            ANSIBLE_HOST_KEY_CHECKING: False
 
   cluster-configure:
     docker:
@@ -182,8 +180,7 @@ jobs:
                 cd ansible
                 ansible-playbook -i ~/inventory.txt cluster_cloudfn.yml
               fi
-          environment:
-            ANSIBLE_HOST_KEY_CHECKING: False
+
       - run:
           name: LB domain
           command: |
@@ -193,17 +190,15 @@ jobs:
                 echo "Management instances configured."
               else
                 cat ~/inventory.txt
-                echo "Wait 60 seconds..."
+                echo "Wait 60 seconds for LoadBalancer's to become reachable"
                 sleep 60
               fi
-          environment:
-            ANSIBLE_HOST_KEY_CHECKING: False
+
       - run:
           name: LB DNS
           command: |
             cat ~/inventory.txt
-            cd ansible
-                sleep 60            
+            cd ansible        
             ansible-playbook -i ~/inventory.txt dns_lb_store.yml
             cat ~/elb_dns.txt
       - persist_to_workspace:
@@ -231,8 +226,6 @@ jobs:
             cat ~/inventory.txt
             cd ansible
             ansible-playbook -i ~/inventory.txt app_dep.yml
-          environment:
-            ANSIBLE_HOST_KEY_CHECKING: False
           no_output_timeout: 2m
 
 
