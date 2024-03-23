@@ -261,9 +261,14 @@ workflows:
             - deployment-infra
       - cluster-configure:
           requires:
-            - docker-deployment
-#            - docker-upload
-#            - configure-infra
+            - docker-upload
+            - configure-infra
+          filters:
+            branches:
+              only: [ sequenze ]
       - docker-deployment:
           requires:
             - cluster-configure
+          filters:
+            branches:
+              only: [ sequenze ]
