@@ -141,6 +141,7 @@ jobs:
           name: Install lib
           command: |
             apk add --update ansible
+            apk add --update ansible openssh
       - run:
           name: Server configuration
           command: |
@@ -168,6 +169,7 @@ jobs:
           name: Install lib
           command: |
             apk add --update ansible
+            apk add --update ansible openssh
       - run:
           name: Server configuration
           command: |
@@ -220,6 +222,7 @@ jobs:
           name: Install lib
           command: |
             apk add --update ansible
+            apk add --update ansible openssh
       - run:
           name: Docker image deploy
           command: |
