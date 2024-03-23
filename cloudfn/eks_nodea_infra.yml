@@ -21,19 +21,18 @@ Parameters:
 
   KeyPair:
     Description: EC2 key pair
+    Default: capstone
     Type: AWS::EC2::KeyPair::KeyName
 
 Mappings:
   ServiceEP:
-    aws-cn:
-      ec2: ec2.amazonaws.com.cn
     aws-us-gov:
       ec2: ec2.amazonaws.com
     aws:
       ec2: ec2.amazonaws.com
 
 Resources:
-  NodeGrRoles:
+  NodeaRoles:
     Type: "AWS::IAM::Role"
     Properties:
       RoleName: !Sub ${EnvironmentName}-Nodegroup-Roles
@@ -56,7 +55,7 @@ Resources:
     Type: AWS::EKS::Nodegroup
     Properties:
       ClusterName: !Sub ${EnvironmentName}-Cluster
-      NodeRole: !GetAtt NodeGrRoles.Arn
+      NodeRole: !GetAtt NodeaRoles.Arn
       NodegroupName: !Sub ${EnvironmentName}-NodeGr
       ScalingConfig:
         MinSize: !Ref MinSize
@@ -68,14 +67,14 @@ Resources:
           - Fn::ImportValue: !Sub ${EnvironmentName}-PUB-NETS
 
 Outputs:
-  NodeGrRoles:
+  NodeaRoles:
     Description: Node Group instanc roles
-    Value: !GetAtt NodeGrRoles.Arn
+    Value: !GetAtt NodeaRoles.Arn
     Export:
-      Name: !Sub ${EnvironmentName}-NodeGrRoles
+      Name: !Sub ${EnvironmentName}-NodeaRoles
 
   NodeGroup:
     Description: EKS Node Group
     Value: !Ref NodeGroup
     Export:
-      Name: !Sub ${EnvironmentName}-NodeGr
+      Name: !Sub ${EnvironmentName}-Nodea
