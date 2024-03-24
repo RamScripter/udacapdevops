@@ -56,7 +56,7 @@ Resources:
     Properties:
       ClusterName: !Sub ${EnvironmentName}-Cluster
       NodeRole: !GetAtt NodeaRoles.Arn
-      NodegroupName: !Sub ${EnvironmentName}-NodeGr
+      NodegroupName: !Sub ${EnvironmentName}-Nodea
       ScalingConfig:
         MinSize: !Ref MinSize
         MaxSize: !Ref MaxSize
