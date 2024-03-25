@@ -4,11 +4,18 @@
   gather_facts: false
   become: yes
   pre_tasks:
-    - name: "Install 'unzip'"
-      sudo apt:
-        name: [ "unzip" ]
+    - name: "Install required packages"
+      package:
+        name: 
+         - python-apt
+         - unzip
         state: latest
         update_cache: yes
+    - name: "check if py is present"
+      package:
+        name: python3
+        state: present
+
   roles:
     - awscli
     - kubernetes
