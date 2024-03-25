@@ -178,8 +178,8 @@ jobs:
                 cat ~/inventory.txt
                 cd ansible
                 ansible-playbook -i ~/inventory.txt cluster_cloudfn.yml              
-#                cat ~/inventory.txt
-#                echo "Management instances configured"
+                #cat ~/inventory.txt
+                #echo "Management instances configured"
               else
                 cat ~/inventory.txt
                 cd ansible
