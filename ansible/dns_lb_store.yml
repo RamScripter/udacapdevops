@@ -17,5 +17,3 @@
         content: "{{ elb_dns.stdout }}"
         dest: "~/elb_dns.txt"
       delegate_to: localhost
-  roles:
-    - kubernetes
