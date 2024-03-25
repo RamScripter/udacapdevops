@@ -176,7 +176,10 @@ jobs:
             if grep -q "No changes to deploy" ~/deployment.txt
               then
                 cat ~/inventory.txt
-                echo "Management instances configured"
+                cd ansible
+                ansible-playbook -i ~/inventory.txt cluster_cloudfn.yml              
+#                cat ~/inventory.txt
+#                echo "Management instances configured"
               else
                 cat ~/inventory.txt
                 cd ansible
